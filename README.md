@@ -24,11 +24,13 @@ This Python script retrieves the driving duration between two specified location
 
 1.  Clone this repository or download the `gmap_duration_logger.py` script.
 2.  Open your terminal or command prompt.
-3.  Install the required Python packages using pip:
+3.  Navigate to the directory where you cloned or downloaded the files.
+4.  Install the required Python packages using the `requirements.txt` file:
 
     ```bash
-    pip install googlemaps openpyxl
+    pip install -r requirements.txt
     ```
+    This will install `googlemaps`, `openpyxl`, and their necessary dependencies.
 
 ## How to Use
 
