@@ -27,8 +27,9 @@ def get_driving_duration(api_key, origin, destination):
         int: Driving duration in minutes, or None if an error occurs or no route is found.
     """
     if api_key == "YOUR_API_KEY_HERE":
-        print("Error: Please replace 'YOUR_API_KEY_HERE' with your actual Google Maps API key in the script.")
-        return None
+        error_msg = "Error: Please replace 'YOUR_API_KEY_HERE' with your actual Google Maps API key in the script."
+        print(error_msg)
+        return None, error_msg
 
     gmaps = googlemaps.Client(key=api_key)
 
@@ -44,18 +45,21 @@ def get_driving_duration(api_key, origin, destination):
             # Get the duration in seconds from the first route
             duration_seconds = directions_result[0]['legs'][0]['duration']['value']
             duration_minutes = int(duration_seconds / 60)
-            return duration_minutes
+            return duration_minutes, None # No error
         else:
-            print(f"No route found between '{origin}' and '{destination}'.")
-            return None
+            error_msg = f"No route found between '{origin}' and '{destination}'."
+            print(error_msg)
+            return None, error_msg
     except googlemaps.exceptions.ApiError as e:
-        print(f"Google Maps API Error: {e}")
-        return None
+        error_msg = f"Google Maps API Error: {e}"
+        print(error_msg)
+        return None, error_msg
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        return None
+        error_msg = f"An unexpected error occurred: {e}"
+        print(error_msg)
+        return None, error_msg
 
-def log_to_excel(filename, timestamp_val, origin_val, destination_val, duration_minutes_val):
+def log_to_excel(filename, timestamp_val, origin_val, destination_val, duration_minutes_val, error_log_val):
     """
     Logs the driving duration data to an Excel file.
 
@@ -72,7 +76,7 @@ def log_to_excel(filename, timestamp_val, origin_val, destination_val, duration_
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         # Add header row
-        headers = ["Timestamp", "Year", "Month", "Weekday", "Origin", "Destination", "Duration (min)"]
+        headers = ["Timestamp", "Year", "Month", "Weekday", "Origin", "Destination", "Duration (min)", "ErrorLog"]
         sheet.append(headers)
         print(f"Created new Excel file: '{filename}' with headers.")
     else:
@@ -92,7 +96,8 @@ def log_to_excel(filename, timestamp_val, origin_val, destination_val, duration_
         weekday_str,
         origin_val,
         destination_val,
-        duration_minutes_val
+        duration_minutes_val if duration_minutes_val is not None else "ERROR", # Log "ERROR" or actual duration
+        error_log_val if error_log_val is not None else "" # Log error message or empty string
     ]
     sheet.append(data_row)
 
@@ -116,15 +121,18 @@ if __name__ == "__main__":
     print(f"Attempting to get driving duration from '{example_origin}' to '{example_destination}'...")
 
     current_time = datetime.now()
-    duration = get_driving_duration(API_KEY, example_origin, example_destination)
+    duration, error_message = get_driving_duration(API_KEY, example_origin, example_destination)
+
+    # Always log the attempt
+    log_to_excel(DEFAULT_EXCEL_FILENAME, current_time, example_origin, example_destination, duration, error_message)
 
     if duration is not None:
-        log_to_excel(DEFAULT_EXCEL_FILENAME, current_time, example_origin, example_destination, duration)
         print(f"The estimated driving duration is: {duration} minutes.")
     else:
-        print("Failed to retrieve driving duration. Please check your API key and addresses.")
-        # Optionally, log the failure attempt as well if desired
-        # log_to_excel(DEFAULT_EXCEL_FILENAME, current_time, example_origin, example_destination, "ERROR")
+        # Error message is already printed by get_driving_duration,
+        # but we can add a summary here if needed.
+        print("Failed to retrieve driving duration. See logs for details.")
+
 
     print("\nScript finished.")
     print(f"Note: If you see 'YOUR_API_KEY_HERE' errors, please update the API_KEY variable in the script.")
