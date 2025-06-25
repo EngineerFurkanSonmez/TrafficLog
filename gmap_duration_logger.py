@@ -72,15 +72,18 @@ def log_to_excel(filename, timestamp_val, origin_val, destination_val, duration_
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         # Add header row
-        headers = ["Timestamp", "Origin", "Destination", "Duration (min)"]
+        headers = ["Timestamp", "Weekday", "Origin", "Destination", "Duration (min)"]
         sheet.append(headers)
         print(f"Created new Excel file: '{filename}' with headers.")
     else:
         workbook = openpyxl.load_workbook(filename)
         sheet = workbook.active
 
+    # Determine weekday
+    weekday_str = timestamp_val.strftime("%A") # %A gives full weekday name (e.g., "Monday")
+
     # Append data row
-    data_row = [timestamp_val.strftime("%Y-%m-%d %H:%M:%S"), origin_val, destination_val, duration_minutes_val]
+    data_row = [timestamp_val.strftime("%Y-%m-%d %H:%M:%S"), weekday_str, origin_val, destination_val, duration_minutes_val]
     sheet.append(data_row)
 
     try:
